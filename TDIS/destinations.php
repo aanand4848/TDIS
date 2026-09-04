@@ -1,5 +1,51 @@
+
 <?php
 session_start();
+require_once __DIR__ . "/data/destinations-data.php";
+
+$selectedCategory = isset($_GET["category"]) ? trim($_GET["category"]) : "";
+$search = isset($_GET["search"]) ? trim($_GET["search"]) : "";
+
+$filteredDestinations = [];
+
+foreach ($destinations as $slug => $destination) {
+
+    if ($selectedCategory !== "") {
+        if ($destination["category_slug"] !== $selectedCategory) {
+            continue;
+        }
+    }
+
+    if ($search !== "") {
+
+        $searchText = strtolower($search);
+
+        $name = strtolower($destination["name"]);
+        $location = strtolower($destination["location"]);
+        $category = strtolower($destination["category_name"]);
+
+        if (
+            strpos($name, $searchText) === false &&
+            strpos($location, $searchText) === false &&
+            strpos($category, $searchText) === false
+        ) {
+            continue;
+        }
+    }
+
+    $filteredDestinations[$slug] = $destination;
+}
+
+if ($selectedCategory !== "" && isset($categories[$selectedCategory])) {
+
+    $pageTitle = $categories[$selectedCategory]["category_name"];
+    $pageDescription = $categories[$selectedCategory]["description"];
+
+} else {
+
+    $pageTitle = "Discover Destinations";
+    $pageDescription = "Explore beautiful destinations across Nepal.";
+}
 ?>
 
 <!DOCTYPE html>
@@ -7,20 +53,19 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Destinations - Travel Destination</title>
+
+    <title><?php echo htmlspecialchars($pageTitle); ?> - Travel Destination</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="assets/style.css">
 </head>
 
-<body>
+<body class="tdis-destinations-page">
 
 <header class="site-header">
-
     <div class="header-inner">
 
         <a class="brand" href="index.php" aria-label="Travel Destination home">
@@ -36,8 +81,8 @@ session_start();
             <a href="index.php">Home</a>
             <a href="destinations.php">Destinations</a>
             <a href="categories.php">Categories</a>
-            <a href="#">About Us</a>
-            <a href="#">Contact Us</a>
+            <a href="about.php">About Us</a>
+            <a href="contact.php">Contact Us</a>
         </nav>
 
         <div class="header-actions">
@@ -45,7 +90,7 @@ session_start();
             <?php if (isset($_SESSION["user_id"])) { ?>
 
                 <span class="user-name">
-                    Welcome, <?php echo $_SESSION["name"]; ?>
+                    Welcome, <?php echo htmlspecialchars($_SESSION["name"]); ?>
                 </span>
 
                 <a class="nav-btn nav-btn-light" href="logout.php">
@@ -67,450 +112,143 @@ session_start();
         </div>
 
     </div>
-
 </header>
 
+<main class="tdis-page-shell">
 
-<main class="destination-page">
+    <?php if ($selectedCategory !== "") { ?>
 
-    <section class="destination-header">
+        <a href="categories.php" class="tdis-back-link">
+            ← Back to Categories
+        </a>
 
-        <h1>Explore Destinations</h1>
+    <?php } else { ?>
+
+        <a href="index.php" class="tdis-back-link">
+            ← Back to Home
+        </a>
+
+    <?php } ?>
+
+    <section class="tdis-page-heading">
+
+        <h1>
+            <?php echo htmlspecialchars($pageTitle); ?>
+        </h1>
 
         <p>
-            Discover amazing places, beautiful landscapes and
-            unforgettable experiences across Nepal.
+            <?php echo htmlspecialchars($pageDescription); ?>
         </p>
 
     </section>
 
+    <form class="tdis-search-box" action="destinations.php" method="get">
 
-    <section class="destination-search">
-
-        <form action="destinations.php" method="GET">
+        <?php if ($selectedCategory !== "") { ?>
 
             <input
-                type="text"
-                name="search"
-                placeholder="Search destination..."
-                value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>"
+                type="hidden"
+                name="category"
+                value="<?php echo htmlspecialchars($selectedCategory); ?>"
             >
 
-            <button type="submit">
-                Search
-            </button>
+        <?php } ?>
 
-        </form>
+        <span class="tdis-search-icon">⌕</span>
 
-    </section>
+        <input
+            type="text"
+            name="search"
+            value="<?php echo htmlspecialchars($search); ?>"
+            placeholder="Search Destination..."
+            aria-label="Search Destination"
+        >
 
+        <button type="submit">
+            Search
+        </button>
 
-    <section class="destination-list">
+    </form>
 
-        <div class="destination-grid">
+    <?php if (count($filteredDestinations) > 0) { ?>
 
+        <section class="tdis-destination-grid">
 
-            <article class="destination-card">
+            <?php foreach ($filteredDestinations as $slug => $destination) { ?>
 
-                <img src="images/everest.jpg" alt="Everest Base Camp">
+                <article class="tdis-destination-card">
 
-                <div class="card-body">
+                    <img
+                        src="<?php echo htmlspecialchars($destination["image"]); ?>"
+                        alt="<?php echo htmlspecialchars($destination["name"]); ?>"
+                    >
 
-                    <h3>Everest Base Camp</h3>
+                    <div class="tdis-card-body">
 
-                    <p>
-                        Experience an unforgettable journey to the
-                        base camp of Mount Everest.
-                    </p>
+                        <span class="tdis-category-label">
+                            <?php echo htmlspecialchars($destination["category_name"]); ?>
+                        </span>
 
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
+                        <h2>
+                            <?php echo htmlspecialchars($destination["name"]); ?>
+                        </h2>
 
-                </div>
+                        <p>
+                            <?php echo htmlspecialchars($destination["short_description"]); ?>
+                        </p>
 
-            </article>
+                        <div class="tdis-location">
+                            📍 <?php echo htmlspecialchars($destination["location"]); ?>
+                        </div>
 
+                        <a
+                            href="destination-details.php?slug=<?php echo urlencode($slug); ?>"
+                            class="tdis-details-btn"
+                        >
+                            View Details
+                        </a>
 
-            <article class="destination-card">
+                    </div>
 
-                <img src="images/annapurna.jpg" alt="Annapurna Base Camp">
+                </article>
 
-                <div class="card-body">
+            <?php } ?>
 
-                    <h3>Annapurna Base Camp</h3>
+        </section>
 
-                    <p>
-                        Explore stunning mountain landscapes and
-                        beautiful Himalayan villages.
-                    </p>
+    <?php } else { ?>
 
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
+        <section class="tdis-no-results">
 
-                </div>
+            <h2>No destinations found</h2>
 
-            </article>
+            <p>
+                We could not find any destination matching your search.
+            </p>
 
+            <?php if ($selectedCategory !== "") { ?>
 
-            <article class="destination-card">
+                <a
+                    href="destinations.php?category=<?php echo urlencode($selectedCategory); ?>"
+                    class="tdis-reset-btn"
+                >
+                    View All Destinations in This Category
+                </a>
 
-                <img src="images/annapurna-circuit.jpg" alt="Annapurna Circuit">
+            <?php } else { ?>
 
-                <div class="card-body">
+                <a href="destinations.php" class="tdis-reset-btn">
+                    View All Destinations
+                </a>
 
-                    <h3>Annapurna Circuit</h3>
+            <?php } ?>
 
-                    <p>
-                        Discover diverse landscapes, mountain views
-                        and traditional villages.
-                    </p>
+        </section>
 
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/langtang.jpg" alt="Langtang Valley">
-
-                <div class="card-body">
-
-                    <h3>Langtang Valley</h3>
-
-                    <p>
-                        Enjoy beautiful Himalayan scenery, forests
-                        and peaceful mountain villages.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/manaslu.jpg" alt="Manaslu Circuit">
-
-                <div class="card-body">
-
-                    <h3>Manaslu Circuit</h3>
-
-                    <p>
-                        Experience one of Nepal's spectacular
-                        mountain trekking routes.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/Lake.jpg" alt="Fewa Lake">
-
-                <div class="card-body">
-
-                    <h3>Fewa Lake</h3>
-
-                    <p>
-                        Enjoy the peaceful lake and beautiful
-                        mountain views in Pokhara.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/rara.jpg" alt="Rara Lake">
-
-                <div class="card-body">
-
-                    <h3>Rara Lake</h3>
-
-                    <p>
-                        Explore the beautiful blue waters of
-                        Nepal's largest lake.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/begnas.jpg" alt="Begnas Lake">
-
-                <div class="card-body">
-
-                    <h3>Begnas Lake</h3>
-
-                    <p>
-                        Relax beside the peaceful lake surrounded
-                        by green hills and nature.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/tilicho.jpg" alt="Tilicho Lake">
-
-                <div class="card-body">
-
-                    <h3>Tilicho Lake</h3>
-
-                    <p>
-                        Visit one of the world's highest lakes
-                        surrounded by Himalayan peaks.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/Lumbini.webp" alt="Lumbini">
-
-                <div class="card-body">
-
-                    <h3>Lumbini</h3>
-
-                    <p>
-                        Visit the birthplace of Lord Buddha and
-                        explore its peaceful surroundings.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/patan.jpg" alt="Patan Durbar Square">
-
-                <div class="card-body">
-
-                    <h3>Patan Durbar Square</h3>
-
-                    <p>
-                        Discover traditional Newari culture,
-                        temples and ancient architecture.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/bhaktapur.jpg" alt="Bhaktapur Durbar Square">
-
-                <div class="card-body">
-
-                    <h3>Bhaktapur Durbar Square</h3>
-
-                    <p>
-                        Explore ancient temples and traditional
-                        Newari architecture.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/kathmandu-durbar.jpg" alt="Kathmandu Durbar Square">
-
-                <div class="card-body">
-
-                    <h3>Kathmandu Durbar Square</h3>
-
-                    <p>
-                        Experience historic palaces, temples and
-                        the cultural heart of Kathmandu.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/nagarkot.jpg" alt="Nagarkot">
-
-                <div class="card-body">
-
-                    <h3>Nagarkot</h3>
-
-                    <p>
-                        Enjoy beautiful sunrise, sunset and
-                        panoramic Himalayan views.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/chitwan.jpg" alt="Chitwan National Park">
-
-                <div class="card-body">
-
-                    <h3>Chitwan National Park</h3>
-
-                    <p>
-                        Experience jungle safaris, wildlife and
-                        natural beauty in Chitwan.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/pokhara.jpg" alt="Pokhara">
-
-                <div class="card-body">
-
-                    <h3>Pokhara</h3>
-
-                    <p>
-                        Explore lakes, mountains, adventure
-                        activities and beautiful landscapes.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/bandipur.jpg" alt="Bandipur">
-
-                <div class="card-body">
-
-                    <h3>Bandipur</h3>
-
-                    <p>
-                        Experience traditional architecture,
-                        mountain views and peaceful streets.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-            <article class="destination-card">
-
-                <img src="images/gosaikunda.jpg" alt="Gosaikunda">
-
-                <div class="card-body">
-
-                    <h3>Gosaikunda</h3>
-
-                    <p>
-                        Visit the sacred alpine lake surrounded
-                        by beautiful Himalayan landscapes.
-                    </p>
-
-                    <a href="#" class="details-btn">
-                        View Details
-                    </a>
-
-                </div>
-
-            </article>
-
-
-        </div>
-
-    </section>
+    <?php } ?>
 
 </main>
 
 </body>
 </html>
+

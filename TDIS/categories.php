@@ -1,5 +1,7 @@
+
 <?php
 session_start();
+require_once __DIR__ . "/data/destinations-data.php";
 ?>
 
 <!DOCTYPE html>
@@ -7,20 +9,19 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Categories - Travel Destination</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="assets/style.css">
 </head>
 
-<body>
+<body class="tdis-categories-page">
 
 <header class="site-header">
-
     <div class="header-inner">
 
         <a class="brand" href="index.php" aria-label="Travel Destination home">
@@ -36,8 +37,8 @@ session_start();
             <a href="index.php">Home</a>
             <a href="destinations.php">Destinations</a>
             <a href="categories.php">Categories</a>
-            <a href="#">About Us</a>
-            <a href="#">Contact Us</a>
+            <a href="about.php">About Us</a>
+            <a href="contact.php">Contact Us</a>
         </nav>
 
         <div class="header-actions">
@@ -45,7 +46,7 @@ session_start();
             <?php if (isset($_SESSION["user_id"])) { ?>
 
                 <span class="user-name">
-                    Welcome, <?php echo $_SESSION["name"]; ?>
+                    Welcome, <?php echo htmlspecialchars($_SESSION["name"]); ?>
                 </span>
 
                 <a class="nav-btn nav-btn-light" href="logout.php">
@@ -67,151 +68,54 @@ session_start();
         </div>
 
     </div>
-
 </header>
 
+<main class="tdis-page-shell">
 
-<main class="categories-page">
+    <a href="index.php" class="tdis-back-link">
+        ← Back to Home
+    </a>
 
-    <section class="categories-header">
-
-        <h1>Explore by Category</h1>
-
-        <p>
-            Find the perfect destination based on your interests
-            and travel preferences.
-        </p>
-
+    <section class="tdis-page-heading">
+        <h1>Explore Categories</h1>
+        <p>Choose a category and discover amazing destinations across Nepal.</p>
     </section>
 
+    <section class="tdis-category-grid">
 
-    <section class="categories-container">
+        <?php foreach ($categories as $slug => $category) { ?>
 
-        <div class="category-grid">
+            <a
+                href="destinations.php?category=<?php echo urlencode($slug); ?>"
+                class="tdis-category-card"
+            >
 
+                <div class="tdis-category-image">
+                    <img
+                        src="<?php echo htmlspecialchars($category["image"]); ?>"
+                        alt="<?php echo htmlspecialchars($category["category_name"]); ?>"
+                    >
+                </div>
 
-            <a href="#" class="category-card">
+                <div class="tdis-category-content">
 
-                <img src="images/everest.jpg" alt="Trekking and Adventure">
-
-                <div class="category-content">
-
-                    <h2>Trekking & Adventure</h2>
+                    <h2>
+                        <?php echo htmlspecialchars($category["category_name"]); ?>
+                    </h2>
 
                     <p>
-                        Discover thrilling trekking routes,
-                        mountain adventures and unforgettable
-                        Himalayan experiences.
+                        <?php echo htmlspecialchars($category["description"]); ?>
                     </p>
 
-                    <span>Explore Destinations →</span>
+                    <span class="tdis-explore-link">
+                        Explore Destinations →
+                    </span>
 
                 </div>
 
             </a>
 
-
-            <a href="#" class="category-card">
-
-                <img src="images/patan.jpg" alt="Cultural and Heritage">
-
-                <div class="category-content">
-
-                    <h2>Cultural & Heritage</h2>
-
-                    <p>
-                        Explore ancient temples, historic places,
-                        traditional architecture and Nepalese culture.
-                    </p>
-
-                    <span>Explore Destinations →</span>
-
-                </div>
-
-            </a>
-
-
-            <a href="#" class="category-card">
-
-                <img src="images/rara.jpg" alt="Lakes and Nature">
-
-                <div class="category-content">
-
-                    <h2>Lakes & Nature</h2>
-
-                    <p>
-                        Experience peaceful lakes, beautiful
-                        landscapes, forests and natural wonders.
-                    </p>
-
-                    <span>Explore Destinations →</span>
-
-                </div>
-
-            </a>
-
-
-            <a href="#" class="category-card">
-
-                <img src="images/Lumbini.webp" alt="Religious Destinations">
-
-                <div class="category-content">
-
-                    <h2>Religious</h2>
-
-                    <p>
-                        Visit sacred temples, monasteries and
-                        important religious destinations across Nepal.
-                    </p>
-
-                    <span>Explore Destinations →</span>
-
-                </div>
-
-            </a>
-
-
-            <a href="#" class="category-card">
-
-                <img src="images/nagarkot.jpg" alt="Popular Getaways">
-
-                <div class="category-content">
-
-                    <h2>Popular Getaways</h2>
-
-                    <p>
-                        Find relaxing weekend trips, scenic towns
-                        and popular destinations for a quick escape.
-                    </p>
-
-                    <span>Explore Destinations →</span>
-
-                </div>
-
-            </a>
-
-
-            <a href="#" class="category-card">
-
-                <img src="images/chitwan.jpg" alt="Wildlife and Safari">
-
-                <div class="category-content">
-
-                    <h2>Wildlife & Safari</h2>
-
-                    <p>
-                        Explore national parks, wildlife reserves
-                        and exciting jungle safari experiences.
-                    </p>
-
-                    <span>Explore Destinations →</span>
-
-                </div>
-
-            </a>
-
-
-        </div>
+        <?php } ?>
 
     </section>
 
@@ -219,3 +123,4 @@ session_start();
 
 </body>
 </html>
+
